@@ -1,5 +1,6 @@
 #pragma once
 #include "Project.hpp"
+#include "audio_engine.hpp"
 
 namespace pp {
 
@@ -82,9 +83,21 @@ private:
 
 class Player {
 public:
+	tx::u32 currentPlaying() const { return m_currentPlaying; }
+	tx::u32 queue(tx::u32 index) const { return m_queue[index]; }
+
+	void play(tx::u32 index) {
+		m_currentPlaying = m_queue[index];
+		ae.pause();
+		ae.play()
+	}
+
+
+
+
 private:
 	std::vector<tx::u32> m_queue;
-
+	AudioEngine ae;
 	tx::u32 m_currentPlaying = tx::InvalidU32;
 };
 } // namespace pp

@@ -21,6 +21,9 @@ public:
 		player->setSource(
 		    QUrl::fromLocalFile(QString::fromStdString(path)));
 	}
+	bool isLoaded() {
+		return player->mediaStatus() == QMediaPlayer::LoadedMedia;
+	}
 
 	void setVolume(int volume) {
 		output->setVolume(static_cast<float>(volume));
@@ -31,6 +34,9 @@ public:
 	}
 	void pause() {
 		player->pause();
+	}
+	bool isPlaying() {
+		return player->mediaStatus() == QMediaPlayer::PlayingState;
 	}
 
 	QMediaMetaData getRawMetadata() {

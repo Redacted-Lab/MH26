@@ -199,8 +199,8 @@ class Content_Playing : public QWidget {
 	Q_OBJECT
 
 public:
-	Content_Playing(QWidget* parent = nullptr)
-	    : QWidget(parent) { init_impl(); }
+	Content_Playing(tx::Coord dimension, QWidget* parent = nullptr)
+	    : QWidget(parent) { init_impl(dimension); }
 	~Content_Playing() {}
 
 protected:
@@ -213,13 +213,13 @@ protected:
 	}
 
 private:
-	void init_impl() {
-		m_label = new QLabel(this);
-		m_label->setText("Playing");
+	void init_impl(tx::Coord dimension) {
+		this->resize(dimension.x, dimension.y);
+		this->setStyleSheet("background-color: rgba(200, 255, 255, 175); border-radius: 20px;");
 	}
 
 private:
-	QLabel* m_label;
+	QLabel* m_thumbnail;
 };
 
 class Content_QueueEntry : public Clickable {
@@ -242,8 +242,8 @@ class Content_Queue : public QWidget {
 	Q_OBJECT
 
 public:
-	Content_Queue(QWidget* parent = nullptr)
-	    : QWidget(parent) { init_impl(); }
+	Content_Queue(tx::Coord dimension, QWidget* parent = nullptr)
+	    : QWidget(parent) { init_impl(dimension); }
 	~Content_Queue() {}
 
 protected:
@@ -256,10 +256,10 @@ protected:
 	}
 
 private:
-	void init_impl() {
+	void init_impl(tx::Coord dimension) {
 		Config::Content_Queue cfg = config.content_queue;
 
-
+		this->resize(dimension.x, dimension.y);
 		this->setStyleSheet("background-color: rgba(200, 255, 255, 175); border-radius: 20px;");
 	}
 
@@ -271,8 +271,8 @@ class Content_Collection : public QWidget {
 	Q_OBJECT
 
 public:
-	Content_Collection(QWidget* parent = nullptr)
-	    : QWidget(parent) { init_impl(); }
+	Content_Collection(tx::Coord dimension, QWidget* parent = nullptr)
+	    : QWidget(parent) { init_impl(dimension); }
 	~Content_Collection() {}
 
 protected:
@@ -285,9 +285,9 @@ protected:
 	}
 
 private:
-	void init_impl() {
-		m_label = new QLabel(this);
-		m_label->setText("Collection");
+	void init_impl(tx::Coord dimension) {
+		this->resize(dimension.x, dimension.y);
+		this->setStyleSheet("background-color: rgba(200, 255, 255, 175); border-radius: 20px;");
 	}
 
 private:
@@ -298,8 +298,8 @@ class Content_Config : public QWidget {
 	Q_OBJECT
 
 public:
-	Content_Config(QWidget* parent = nullptr)
-	    : QWidget(parent) { init_impl(); }
+	Content_Config(tx::Coord dimension, QWidget* parent = nullptr)
+	    : QWidget(parent) { init_impl(dimension); }
 	~Content_Config() {}
 
 protected:
@@ -312,9 +312,9 @@ protected:
 	}
 
 private:
-	void init_impl() {
-		m_label = new QLabel(this);
-		m_label->setText("Config");
+	void init_impl(tx::Coord dimension) {
+		this->resize(dimension.x, dimension.y);
+		this->setStyleSheet("background-color: rgba(200, 255, 255, 175); border-radius: 20px;");
 	}
 
 private:
@@ -340,24 +340,21 @@ private:
 
 		m_dimension.y = std::round((float)config.main.screenDimension.y * config.content.height);
 		m_margin = std::round((float)m_dimension.y * cfg.margin);
+		m_dimension.y -= 2 * m_margin;
 		m_dimension.x = config.main.screenDimension.x - m_margin * 2;
 
 		m_pos.x = m_margin;
 		m_pos.y = m_margin + std::round((float)config.main.screenDimension.y * config.tray.height);
 
-		m_sectionPlaying = new Content_Playing(m_parent);
-		m_sectionPlaying->resize(m_dimension.x, m_dimension.y);
+		m_sectionPlaying = new Content_Playing(m_dimension, m_parent);
 		m_sectionPlaying->move(m_pos.x, m_pos.y);
-		m_sectionQueue = new Content_Queue(m_parent);
-		m_sectionQueue->resize(m_dimension.x, m_dimension.y);
+		m_sectionQueue = new Content_Queue(m_dimension, m_parent);
 		m_sectionQueue->move(m_pos.x, m_pos.y);
 		m_sectionQueue->hide();
-		m_sectionCollection = new Content_Collection(m_parent);
-		m_sectionCollection->resize(m_dimension.x, m_dimension.y);
+		m_sectionCollection = new Content_Collection(m_dimension, m_parent);
 		m_sectionCollection->move(m_pos.x, m_pos.y);
 		m_sectionCollection->hide();
-		m_sectionConfig = new Content_Config(m_parent);
-		m_sectionConfig->resize(m_dimension.x, m_dimension.y);
+		m_sectionConfig = new Content_Config(m_dimension, m_parent);
 		m_sectionConfig->move(m_pos.x, m_pos.y);
 		m_sectionConfig->hide();
 	}
@@ -379,12 +376,38 @@ private:
 		if (newSection == oldSection) return;
 		//QMessageBox::information(m_parent, "", QString("changing section into %1").arg(newSection));
 
-		applySection_impl(oldSection, [&](QWidget* section) {
-			section->hide();
-		});
 		applySection_impl(newSection, [&](QWidget* section) {
 			section->show();
+			section->move(
+			    m_pos.x + (newSection > oldSection ? -1 : 1) * config.main.screenDimension.x,
+			    m_pos.y);
+			QPropertyAnimation* anim = new QPropertyAnimation(section, "pos");
+			anim->setDuration(200);
+			anim->setEndValue(QPoint(m_pos.x, m_pos.y));
+			anim->setEasingCurve(QEasingCurve::OutCubic);
+
+			anim->start(QAbstractAnimation::DeleteWhenStopped);
 		});
+
+		// applySection_impl(oldSection, [&](QWidget* section) {
+		// 	section->hide();
+		// });
+
+		applySection_impl(oldSection, [&](QWidget* section) {
+			QPropertyAnimation* anim = new QPropertyAnimation(section, "pos");
+			anim->setDuration(200);
+			anim->setEndValue(QPoint(
+			    m_pos.x + (newSection > oldSection ? 1 : -1) * config.main.screenDimension.x,
+			    m_pos.y));
+			anim->setEasingCurve(QEasingCurve::OutCubic);
+
+			QObject::connect(anim, &QPropertyAnimation::finished, [section]() {
+				section->hide();
+			});
+
+			anim->start(QAbstractAnimation::DeleteWhenStopped);
+		});
+
 		oldSection = newSection;
 	}
 
@@ -449,7 +472,9 @@ private:
 		m_windowBox->lower();
 
 		QPixmap backgroundPix((tx::getExeDir() / "assets/chen.jpg").c_str());
-		backgroundPix = backgroundPix.scaled(800, 480, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+		backgroundPix = backgroundPix.scaled(
+		    config.main.screenDimension.x, config.main.screenDimension.y,
+		    Qt::KeepAspectRatio, Qt::SmoothTransformation);
 		m_windowBox->setPixmap(backgroundPix);
 
 		// Inside your init_impl or constructor

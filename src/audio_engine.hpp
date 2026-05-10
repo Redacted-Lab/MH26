@@ -29,9 +29,8 @@ public:
 	void play() {
 		player->play();
 	}
-
 	void pause() {
-		player->pause
+		player->pause();
 	}
 
 	QMediaMetaData getRawMetadata() {
@@ -49,12 +48,11 @@ public:
 	int getDuration() {
 		return data.value(QMediaMetaData::Duration).toInt();
 	}
-    
-    QPixmap getCover() {
-        QVariant coverVar = data.value(QMediaMetaData::ThumbnailImage);
-        QImage coverImage = coverVar.value<QImage>();
-        return QPixmap::fromImage(coverImage);
-    }
 
-};  
+	QPixmap getCover() {
+		QVariant coverVar = data.value(QMediaMetaData::ThumbnailImage);
+		QImage coverImage = coverVar.value<QImage>();
+		return QPixmap::fromImage(coverImage);
+	}
+};
 } // namespace pp

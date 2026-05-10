@@ -48,6 +48,7 @@ using bitSpan = span<tx::u8>;
 #include <QListView>
 #include <QTreeView>
 #include <QVariant>
+#include <QListWidget>
 
 #include <QPoint>
 
@@ -88,13 +89,17 @@ struct Config {
 		float height = 0.9f; // percentage of the entire screen
 		float margin = 0.1f; // percentage of tray height
 	} content;
+	struct Content_Queue {
+		float padding = 0.1f; // percentage of widget, padding of widget and list
+	} content_queue;
+
 
 	struct MusicSource {
 		MusicSource() {
-			std::string(std::getenv("$HOME")) + "/.config/PiPod/";
+			configPath = std::string(std::getenv("HOME")) + "/.config/PiPod/";
 		}
-		const char* configPath;
+		std::string configPath;
 	} musicSource;
 };
-constexpr const Config config;
+const Config config;
 } // namespace pp

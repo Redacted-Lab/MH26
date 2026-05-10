@@ -1,5 +1,6 @@
 #pragma once
 #include "Project.hpp"
+#include "player.hpp"
 
 
 namespace pp {
@@ -221,6 +222,22 @@ private:
 	QLabel* m_label;
 };
 
+class Content_QueueEntry : public Clickable {
+	Q_OBJECT
+
+public:
+protected:
+	void paintEvent(QPaintEvent*) override {
+		QStyleOption opt;
+		opt.initFrom(this);
+		QPainter p(this);
+		p.setRenderHint(QPainter::Antialiasing);
+		this->style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+	}
+
+private:
+};
+
 class Content_Queue : public QWidget {
 	Q_OBJECT
 
@@ -240,8 +257,10 @@ protected:
 
 private:
 	void init_impl() {
-		m_label = new QLabel(this);
-		m_label->setText("Queue");
+		Config::Content_Queue cfg = config.content_queue;
+
+
+		this->setStyleSheet("background-color: rgba(200, 255, 255, 175); border-radius: 20px;");
 	}
 
 private:

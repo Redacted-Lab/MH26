@@ -80,14 +80,11 @@ private:
 	}
 };
 
-
-
-
-
-
-
 class Player {
 public:
 private:
+	std::vector<tx::u32> m_queue;
+
+	tx::u32 m_currentPlaying = tx::InvalidU32;
 };
 } // namespace pp
